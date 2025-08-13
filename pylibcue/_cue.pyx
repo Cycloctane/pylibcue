@@ -193,22 +193,22 @@ cdef class Track:
     @property
     def start(self):
         cdef long start = libcue.track_get_start(self._track)
-        return f2msf(start) if start > 0 else None
+        return f2msf(start) if start >= 0 else None
 
     @property
     def length(self):
         cdef long length = libcue.track_get_length(self._track)
-        return f2msf(length) if length > 0 else None
+        return f2msf(length) if length >= 0 else None
 
     @property
     def zero_pre(self):
         cdef long length = libcue.track_get_zero_pre(self._track)
-        return f2msf(length) if length > 0 else None
+        return f2msf(length) if length >= 0 else None
 
     @property
     def zero_post(self):
         cdef long length = libcue.track_get_zero_post(self._track)
-        return f2msf(length) if length > 0 else None
+        return f2msf(length) if length >= 0 else None
 
     @property
     def isrc(self):
