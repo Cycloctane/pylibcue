@@ -3,6 +3,23 @@ pylibcue
 
 Python wrapper for `libcue <https://github.com/lipnitsk/libcue>`_ CUE sheet parser library.
 
+Install
+-------
+
+.. code-block:: bash
+
+    pip install pylibcue
+
+Compile from source
+^^^^^^^^^^^^^^^^^^^
+
+Requirements: bison, flex, make.
+
+.. code-block:: bash
+
+    pip install --upgrade build
+    make wheel
+
 Usage
 -----
 
