@@ -18,7 +18,7 @@ ext: parser
 	$(PYTHON) setup.py build_ext --inplace
 
 test: ext
-	$(PYTHON) -m unittest discover -s tests
+	$(PYTHON) -m unittest discover -v -s tests
 
 sdist: parser
 	$(PYTHON) -m build --sdist

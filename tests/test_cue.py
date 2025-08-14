@@ -1,15 +1,26 @@
 import unittest
-from os.path import dirname, join
+from pathlib import Path
 
 import pylibcue
 
-TEST_DATA = join(dirname(__file__), "testdata")
+TEST_DATA = Path(__file__).parent / "testdata"
 
 
 class TestCue(unittest.TestCase):
 
-    def test_example_cue(self):
-        cd = pylibcue.Cd.from_path(join(TEST_DATA, "example.cue"))
+    def test_minimal(self):
+        cd = pylibcue.Cd.from_path(TEST_DATA / "minimal.cue")
+        self.assertEqual(len(cd), 2)
+        self.assertIsNotNone(cd.cdtext)
+        self.assertIsNotNone(cd.rem)
+        self.assertIsNone(cd.cdtext.title)
+        self.assertEqual(cd[1].start, (4, 10, 59))
+        self.assertIsNotNone(cd[1].cdtext)
+        self.assertIsNotNone(cd[1].rem)
+        self.assertIsNone(cd[1].cdtext.title)
+
+    def test_example(self):
+        cd = pylibcue.Cd.from_path(TEST_DATA / "example.cue")
         self.assertEqual(cd.cdtext.performer, "サンドリオン")
         self.assertEqual(cd.cdtext.title, "天体図")
         self.assertEqual(len(cd), 4)
@@ -24,7 +35,7 @@ class TestCue(unittest.TestCase):
         self.assertEqual(track_01.isrc, "JPCO02329890")
         self.assertEqual(track_01.start, (0, 0, 0))
         self.assertEqual(track_01.length, (4, 8, 50))
-        self.assertEqual(track_01.zero_pre, (0, 0, 0))
+        self.assertEqual(track_01.zero_pre, None)
 
         track_02 = cd[1]
         self.assertEqual(track_02.cdtext.title, "ゆびきりの唄")
@@ -39,6 +50,23 @@ class TestCue(unittest.TestCase):
         self.assertEqual(track_04.start, (12, 27, 43))
         self.assertIs(track_04.length, None)
         self.assertEqual(track_04.zero_pre, (0, 2, 18))
+
+    def test_more(self):
+        cd = pylibcue.Cd.from_path(TEST_DATA / "more.cue")
+        self.assertEqual(cd.cdtext.songwriter, "Songwriter0")
+        self.assertEqual(cd.cdtext.composer, "Composer0")
+        self.assertEqual(cd.cdtext.arranger, "Arranger0")
+        self.assertEqual(cd.cdtext.message, "message0")
+        self.assertEqual(cd.cdtext.disc_id, "1234ABCD")
+        self.assertEqual(cd.cdtext.upc_isrc, "1234567890")
+        self.assertEqual(cd.cdtext.genre, "Genre0")
+        self.assertEqual(cd.rem.date, "2023")
+        self.assertEqual(cd.cdtextfile, "cdtext0.cdt")
+        self.assertEqual(cd[0].zero_pre, (0, 1, 0))
+        self.assertEqual(cd[0].zero_post, (0, 1, 0))
+        self.assertTrue(cd[0] & pylibcue.TrackFlag.COPY_PERMITTED)
+        self.assertTrue(cd[0] & pylibcue.TrackFlag.FOUR_CHANNEL)
+        self.assertFalse(cd[0] & pylibcue.TrackFlag.NONE)
 
 
 if __name__ == "__main__":
