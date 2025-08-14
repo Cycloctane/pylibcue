@@ -1,12 +1,6 @@
 from enum import IntEnum, IntFlag, auto
 
 
-class DiscMode(IntEnum):
-    CD_DA = 0
-    CD_ROM = auto()
-    CD_ROM_XA = auto()
-
-
 class TrackMode(IntEnum):
     AUDIO = 0
     MODE1 = auto()
@@ -16,11 +10,6 @@ class TrackMode(IntEnum):
     MODE2_FORM2 = auto()
     MODE2_FORM_MIX = auto()
     MODE2_RAW = auto()
-
-
-class TrackSubMode(IntEnum):
-    RW = 0
-    RW_RAW = auto()
 
 
 class TrackFlag(IntFlag):

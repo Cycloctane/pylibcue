@@ -1,8 +1,6 @@
 from libc.stdio cimport FILE
 
 cdef extern from "libcue.h" nogil:
-    enum DiscMode:
-        MODE_CD_DA, MODE_CD_ROM, MODE_CD_ROM_XA
 
     enum TrackMode:
         MODE_AUDIO
@@ -13,9 +11,6 @@ cdef extern from "libcue.h" nogil:
         MODE_MODE2_FORM2
         MODE_MODE2_FORM_MIX
         MODE_MODE2_RAW
-
-    enum TrackSubMode:
-        SUB_MODE_RW, SUB_MODE_RW_RAW
 
     enum TrackFlag:
         FLAG_NONE = 0x00
@@ -70,7 +65,6 @@ cdef extern from "libcue.h" nogil:
     void cd_delete(Cd *cd)
 
     # CD functions
-    DiscMode cd_get_mode(const Cd *cd)
     const char *cd_get_cdtextfile(const Cd *cd)
     int cd_get_ntrack(const Cd *cd)
 
@@ -90,7 +84,6 @@ cdef extern from "libcue.h" nogil:
     long track_get_start(const Track *track)
     long track_get_length(const Track *track)
     TrackMode track_get_mode(const Track *track)
-    TrackSubMode track_get_sub_mode(const Track *track)
     int track_is_set_flag(const Track *track, TrackFlag flag)
     long track_get_zero_pre(const Track *track)
     long track_get_zero_post(const Track *track)

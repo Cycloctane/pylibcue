@@ -4,7 +4,7 @@ from libc.stdio cimport fopen, fclose, FILE
 from os import fsencode
 
 from .cimport _libcue as libcue
-from .mode import DiscMode, TrackMode, TrackSubMode
+from .mode import TrackMode
 
 cdef dict _PTI = {
     "title": libcue.PTI_TITLE, "performer": libcue.PTI_PERFORMER,
@@ -136,10 +136,6 @@ cdef class Cd:
             return None
         return content.decode(encoding=self.encoding)
 
-    @property
-    def mode(self):
-        return DiscMode(<int> libcue.cd_get_mode(self._cd))
-
     def __len__(self):
         return self.get_ntrack()
 
@@ -215,10 +211,6 @@ cdef class Track:
     @property
     def mode(self):
         return TrackMode(<int> libcue.track_get_mode(self._track))
-
-    @property
-    def submode(self):
-        return TrackSubMode(<int> libcue.track_get_sub_mode(self._track))
 
     cpdef has_flag(self, int flag):
         cdef bint ret = libcue.track_is_set_flag(self._track, <libcue.TrackFlag> flag)
