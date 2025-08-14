@@ -1,8 +1,7 @@
 # cython: language_level=3
 
-from libc.stdio cimport fdopen, fclose, FILE
-from posix.unistd cimport dup
-from pathlib import Path
+from libc.stdio cimport fopen, fclose, FILE
+from os import fsencode
 
 from .cimport _libcue as libcue
 from .mode import DiscMode, TrackMode, TrackSubMode
@@ -87,17 +86,19 @@ cdef class Cd:
 
     def __init__(self, *args, **kwargs):
         raise NotImplementedError(
-            "Use classmethods (.from_str .from_file etc.) to create Cd object from cue."
+            "Use classmethods (Cd.from_str and Cd.from_file) to create Cd object from CUE contents."
         )
 
     @classmethod
-    def from_file(cls, object file, str encoding="utf-8"):
-        cdef FILE *f = fdopen(dup(file.fileno()), b'r')
-        if f is NULL:
+    def from_file(cls, object path, str encoding = "utf-8"):
+        cdef bytes encoded_path = fsencode(path)
+        cdef const char *_path = encoded_path
+        cdef FILE *fp = fopen(_path, "r")
+        if fp is NULL:
             raise IOError("Failed to read file.")
 
-        cdef libcue.Cd *cd = libcue.cue_parse_file(f)
-        fclose(f)
+        cdef libcue.Cd *cd = libcue.cue_parse_file(fp)
+        fclose(fp)
         if cd is NULL:
             raise ValueError("Failed to parse cue file.")
 
@@ -107,7 +108,7 @@ cdef class Cd:
 
     @classmethod
     def from_str(cls, str string):
-        encoded = string.encode()
+        cdef bytes encoded = string.encode()
         cdef const char *content = encoded
         cdef libcue.Cd *cd = libcue.cue_parse_string(content)
         if cd is NULL:
@@ -115,12 +116,6 @@ cdef class Cd:
         cdef Cd obj = cls.__new__(cls)
         obj._init(cd, "utf-8")
         return obj
-
-    @classmethod
-    def from_path(cls, object path, str encoding="utf-8"):
-        _path = Path(path)
-        with _path.open("r", encoding=encoding) as f:
-            return cls.from_file(f, encoding)
 
     @property
     def cdtext(self):
@@ -236,3 +231,9 @@ cdef tuple f2msf(const long frames):
     cdef long seconds = frames // 75
     cdef long minutes = seconds // 60
     return minutes, seconds % 60, frames % 75
+
+def parse_file(object path, str encoding = "utf-8"):
+    return Cd.from_file(path, encoding)
+
+def parse_str(str string):
+    return Cd.from_str(string)

@@ -27,11 +27,10 @@ Create a CD instance from CUE sheet file or string:
 
 .. code-block:: python
 
-    from pylibcue import Cd
+    import pylibcue
 
-    cd = Cd.from_path("./example.cue")
-    # cd = Cd.from_file(open("./example.cue", 'r'))
-    # cd = Cd.from_str("...")
+    cd = pylibcue.parse_file("./example.cue")
+    # cd = pylibcue.parse_str("...")
 
 Extract CD metadata and tracks:
 

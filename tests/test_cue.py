@@ -9,7 +9,7 @@ TEST_DATA = Path(__file__).parent / "testdata"
 class TestCue(unittest.TestCase):
 
     def test_minimal(self):
-        cd = pylibcue.Cd.from_path(TEST_DATA / "minimal.cue")
+        cd = pylibcue.Cd.from_file(TEST_DATA / "minimal.cue")
         self.assertEqual(len(cd), 2)
         self.assertIsNotNone(cd.cdtext)
         self.assertIsNotNone(cd.rem)
@@ -20,7 +20,7 @@ class TestCue(unittest.TestCase):
         self.assertIsNone(cd[1].cdtext.title)
 
     def test_example(self):
-        cd = pylibcue.Cd.from_path(TEST_DATA / "example.cue")
+        cd = pylibcue.Cd.from_file(TEST_DATA / "example.cue")
         self.assertEqual(cd.cdtext.performer, "サンドリオン")
         self.assertEqual(cd.cdtext.title, "天体図")
         self.assertEqual(len(cd), 4)
@@ -52,7 +52,7 @@ class TestCue(unittest.TestCase):
         self.assertEqual(track_04.zero_pre, (0, 2, 18))
 
     def test_more(self):
-        cd = pylibcue.Cd.from_path(TEST_DATA / "more.cue")
+        cd = pylibcue.Cd.from_file(TEST_DATA / "more.cue")
         self.assertEqual(cd.cdtext.songwriter, "Songwriter0")
         self.assertEqual(cd.cdtext.composer, "Composer0")
         self.assertEqual(cd.cdtext.arranger, "Arranger0")
