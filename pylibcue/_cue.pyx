@@ -1,9 +1,9 @@
-# cython: language_level=3
+# cython: language_level=3, auto_pickle=False
 
 from libc.stdio cimport fopen, fclose, FILE
 from os import fsencode
 
-from .cimport _libcue as libcue
+from . cimport _libcue as libcue
 from .mode import TrackMode
 
 cdef dict _PTI = {
@@ -24,6 +24,8 @@ cdef dict _REM = {
 }
 
 cdef class CDText:
+    """Metadata in CD-TEXT fields."""
+
     cdef:
         libcue.Cdtext *_cdtext
         Cd _ref
@@ -44,6 +46,8 @@ cdef class CDText:
         return content.decode(encoding=self._ref.encoding)
 
 cdef class Rem:
+    """Metadata in REM fields."""
+
     cdef:
         libcue.Rem *_rem
         Cd _ref
@@ -64,6 +68,12 @@ cdef class Rem:
         return content.decode(encoding=self._ref.encoding)
 
 cdef class Cd:
+    """Represents a CD described by CUE sheet.
+    Its tracks are accessible via index and iteration.
+
+    Use classmethods ``from_file`` or ``from_str`` to create instance.
+    """
+
     cdef:
         libcue.Cd *_cd
         readonly str encoding
@@ -86,11 +96,17 @@ cdef class Cd:
 
     def __init__(self, *args, **kwargs):
         raise NotImplementedError(
-            "Use classmethods (Cd.from_str and Cd.from_file) to create Cd object from CUE contents."
+            "Use classmethods (Cd.from_str and Cd.from_file) "
+            "to create Cd object from CUE contents."
         )
 
     @classmethod
     def from_file(cls, object path, str encoding = "utf-8"):
+        """Create Cd instance by parsing CUE sheet file.
+
+        :raises IOError: If the file cannot be read
+        :raises ValueError: If libcue fail to parse CUE data
+        """
         cdef bytes encoded_path = fsencode(path)
         cdef const char *_path = encoded_path
         cdef FILE *fp = fopen(_path, "r")
@@ -108,6 +124,10 @@ cdef class Cd:
 
     @classmethod
     def from_str(cls, str string):
+        """Create Cd instance by parsing string as CUE content.
+
+        :raises ValueError: If libcue failed to parse CUE data
+        """
         cdef bytes encoded = string.encode()
         cdef const char *content = encoded
         cdef libcue.Cd *cd = libcue.cue_parse_string(content)
@@ -119,12 +139,20 @@ cdef class Cd:
 
     @property
     def cdtext(self):
+        """Metadata in CD-TEXT fields of CD section.
+
+        Creates new ``CDText`` instance on each access.
+        """
         cdef CDText cdtext = CDText.__new__(CDText)
         cdtext._init(libcue.cd_get_cdtext(self._cd), self)
         return cdtext
 
     @property
     def rem(self):
+        """Metadata in REM fields of CD section.
+
+        Creates new ``Rem`` instance on each access.
+        """
         cdef Rem rem = Rem.__new__(Rem)
         rem._init(libcue.cd_get_rem(self._cd), self)
         return rem
@@ -147,6 +175,8 @@ cdef class Cd:
         return track
 
 cdef class Track:
+    """Represents a single track from CD in CUE sheet."""
+
     cdef:
         libcue.Track *_track
         Cd _ref
@@ -164,18 +194,27 @@ cdef class Track:
 
     @property
     def cdtext(self):
+        """Metadata in CD-TEXT fields of track section.
+
+        Creates new ``CDText`` instance on each access.
+        """
         cdef CDText cdtext = CDText.__new__(CDText)
         cdtext._init(libcue.track_get_cdtext(self._track), self._ref)
         return cdtext
 
     @property
     def rem(self):
+        """Metadata in REM fields of track section.
+
+        Creates new ``Rem`` instance on each access.
+        """
         cdef Rem rem = Rem.__new__(Rem)
         rem._init(libcue.track_get_rem(self._track), self._ref)
         return rem
 
     @property
     def filename(self):
+        """Filename of the audio file that contains the track."""
         cdef const char *filename = libcue.track_get_filename(self._track)
         if filename is NULL:
             return None
@@ -183,21 +222,43 @@ cdef class Track:
 
     @property
     def start(self):
+        """Start time of the track (skipped pre-gap duration).
+
+        :return: ``(minutes, seconds, frames)`` tuple,
+            or ``None`` if INDEX field does not exist
+        """
         cdef long start = libcue.track_get_start(self._track)
         return f2msf(start) if start >= 0 else None
 
     @property
     def length(self):
+        """Length of current track calculated with the start time
+        of the next track.
+
+        :return: ``(minutes, seconds, frames)`` tuple,
+            or ``None`` if cannot determine (e.g. last track)
+        """
         cdef long length = libcue.track_get_length(self._track)
         return f2msf(length) if length >= 0 else None
 
     @property
     def zero_pre(self):
+        """Pre-gap (silence before track) duration from PREGAP field
+        or calculated with INDEX fields.
+
+        :return: (minutes, seconds, frames) tuple
+            or None if cannot determine
+        """
         cdef long length = libcue.track_get_zero_pre(self._track)
         return f2msf(length) if length >= 0 else None
 
     @property
     def zero_post(self):
+        """Post-gap duration from POSTGAP field.
+
+        :return: (minutes, seconds, frames) tuple
+            or ``None`` if field does not exist
+        """
         cdef long length = libcue.track_get_zero_post(self._track)
         return f2msf(length) if length >= 0 else None
 
@@ -213,6 +274,10 @@ cdef class Track:
         return TrackMode(<int> libcue.track_get_mode(self._track))
 
     cpdef has_flag(self, int flag):
+        """Check if the track has a specific flag set in FLAGS field.
+
+        :param flag: ``TrackFlag`` Enum to check
+        """
         cdef bint ret = libcue.track_is_set_flag(self._track, <libcue.TrackFlag> flag)
         return ret
 
@@ -225,7 +290,20 @@ cdef tuple f2msf(const long frames):
     return minutes, seconds % 60, frames % 75
 
 def parse_file(object path, str encoding = "utf-8"):
+    """Parse a CUE file and create a ``Cd`` instance.
+
+    (alias for ``Cd.from_file``)
+
+    :raises IOError: If the file cannot be read.
+    :raises ValueError: If libcue fail to parse CUE data.
+    """
     return Cd.from_file(path, encoding)
 
 def parse_str(str string):
+    """Parse a CUE string and create a ``Cd`` instance.
+
+    (alias for ``Cd.from_str``)
+
+    :raises ValueError: If libcue failed to parse CUE data
+    """
     return Cd.from_str(string)
