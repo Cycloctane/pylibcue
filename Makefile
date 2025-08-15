@@ -24,10 +24,10 @@ sdist: parser
 	$(PYTHON) -m build --sdist
 
 wheel: parser
-	CC=$(CC) $(PYTHON) -m build
+	CC=$(CC) $(PYTHON) -m build --wheel
 
 clean:
 	rm -f pylibcue/*.so pylibcue/*.c
 	rm -f $(LIBCUE)/cue_scanner.c $(LIBCUE)/cue_parser.c $(LIBCUE)/cue_parser.h
-	rm -f dist/*
+	rm -f dist/* wheelhouse/*
 	rm -rf build/* *.egg-info

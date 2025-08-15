@@ -4,6 +4,10 @@ on:
   push:
     branches: ['main']
     tags: ['v*']
+  workflow_dispatch:
+
+env:
+  BUILD_WHEEL: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
   test-linux:
@@ -22,18 +26,31 @@ jobs:
       with:
         python-version: ${{ matrix.pyver }}
     - name: Install dependencies
-      run: python -m pip install --upgrade setuptools Cython build
+      run: python -m pip install --upgrade setuptools Cython build auditwheel
     - name: Run tests
       run: make test
     - name: Build sdist
-      if: ${{ matrix.pyver == '3.13' }}
+      if: matrix.pyver == '3.13'
       run: make sdist
     - name: Upload sdist
-      if: ${{ matrix.pyver == '3.13' }}
+      if: matrix.pyver == '3.13'
       uses: actions/upload-artifact@v4
       with:
         name: sdist
         path: dist/pylibcue*.tar.gz
+    - name: Build wheel
+      if: env.BUILD_WHEEL == 'true'
+      run: make wheel
+    - name: Auditwheel
+      if: env.BUILD_WHEEL == 'true'
+      run: auditwheel repair dist/*.whl
+    - name: Upload wheels
+      if: env.BUILD_WHEEL == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: wheel_py${{ matrix.pyver }}_linux
+        path: wheelhouse/*.whl
+        if-no-files-found: error
 
   test:
     name: Test
@@ -52,6 +69,8 @@ jobs:
     steps:
     - name: Download sdist
       uses: actions/download-artifact@v5
+      with:
+        name: sdist
     - name: Extract sdist
       shell: bash
       run: tar xzf pylibcue*.tar.gz --strip-components=1
@@ -60,9 +79,42 @@ jobs:
       with:
         python-version: ${{ matrix.pyver }}
     - name: Install dependencies
-      run: python -m pip install --upgrade setuptools Cython
+      run: python -m pip install --upgrade setuptools Cython build
     - name: Config distutils for MinGW
-      if: ${{ matrix.os == 'windows' }}
+      if: matrix.os == 'windows'
       run: Set-Content -Path "$env:USERPROFILE\pydistutils.cfg" -Value "[build]`ncompiler=mingw32"
     - name: Run tests
       run: make test
+    - name: Build wheel
+      if: env.BUILD_WHEEL == 'true'
+      run: make wheel
+    - name: Upload wheels
+      if: env.BUILD_WHEEL == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: wheel_py${{ matrix.pyver }}_${{ matrix.os }}
+        path: dist/*.whl
+        if-no-files-found: error
+
+  release:
+    name: Create Release
+    needs: test
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download wheels
+      uses: actions/download-artifact@v5
+      with:
+        path: dist/
+        merge-multiple: true
+    - name: Upload to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Create Release
+      uses: ncipollo/release-action@v1
+      with:
+        name: ${{ github.ref_name }}
+        draft: true
+        artifacts: "dist/*"
