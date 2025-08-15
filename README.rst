@@ -1,7 +1,9 @@
 pylibcue
 ========
 
-Python wrapper for `libcue <https://github.com/lipnitsk/libcue>`_ CUE sheet parser library.
+pylibcue is a CUE sheet parser library for python. It provides fast and
+reliable CUE sheets parsing interfaces for python by wrapping `libcue
+<https://github.com/lipnitsk/libcue>`_ C library with Cython.
 
 Install
 -------
@@ -23,7 +25,7 @@ Requirements: bison, flex, make.
 Usage
 -----
 
-Create a CD instance from CUE sheet file or string:
+Create a CD instance by parsing a CUE sheet file or string:
 
 .. code-block:: python
 
@@ -32,19 +34,17 @@ Create a CD instance from CUE sheet file or string:
     cd = pylibcue.parse_file("./example.cue")
     # cd = pylibcue.parse_str("...")
 
-Extract CD metadata and tracks:
+Extract CD metadata and iterate through tracks in CD:
 
 .. code-block:: python
 
-    cdtext = cd.cdtext
-    rem = cd.rem
-    print("Title:", cdtext.title)
-    print("Artist:", cdtext.performer)
-    print("Date:", rem.date)
+    print("Title:", cd.cdtext.title)
+    print("Artist:", cd.cdtext.performer)
+    print("Date:", cd.rem.date)
     print("Tracks:")
 
-    for track in cd:
-        print(f"\t{track.start} - {track.cdtext.title}")
+    for tr in cd:
+        print(f"{tr.start} - {tr.cdtext.title} - {tr.cdtext.performer}")
 
 License
 -------
