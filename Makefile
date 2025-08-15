@@ -15,7 +15,7 @@ $(LIBCUE)/cue_parser.c $(LIBCUE)/cue_parser.h:
 parser: $(LIBCUE)/cue_scanner.c $(LIBCUE)/cue_parser.c $(LIBCUE)/cue_parser.h
 
 ext: parser
-	$(PYTHON) setup.py build_ext --inplace
+	CC=$(CC) $(PYTHON) setup.py build_ext --inplace
 
 test: ext
 	$(PYTHON) -m unittest discover -v -s tests
@@ -24,7 +24,7 @@ sdist: parser
 	$(PYTHON) -m build --sdist
 
 wheel: parser
-	$(PYTHON) -m build
+	CC=$(CC) $(PYTHON) -m build
 
 clean:
 	rm -f pylibcue/*.so pylibcue/*.c

@@ -10,7 +10,7 @@ jobs:
     name: Test (Linux)
     strategy:
       matrix:
-        pyver: ['3.10', '3.13']
+        pyver: ['3.10', '3.11', '3.12', '3.13']
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -36,12 +36,18 @@ jobs:
         path: dist/pylibcue*.tar.gz
 
   test:
-    name: Test (Windows & macOS)
+    name: Test
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
     needs: test-linux
     strategy:
       matrix:
-        pyver: ['3.10', '3.13']
+        pyver: ['3.10', '3.11', '3.12', '3.13']
         os: ['windows', 'macos']
+        exclude: # python/cpython/pull/100137
+        - os: 'windows'
+          pyver: '3.10'
+        - os: 'windows'
+          pyver: '3.11'
     runs-on: ${{ matrix.os }}-latest
     steps:
     - name: Download sdist
@@ -55,5 +61,8 @@ jobs:
         python-version: ${{ matrix.pyver }}
     - name: Install dependencies
       run: python -m pip install --upgrade setuptools Cython
+    - name: Config distutils for MinGW
+      if: ${{ matrix.os == 'windows' }}
+      run: Set-Content -Path "$env:USERPROFILE\pydistutils.cfg" -Value "[build]`ncompiler=mingw32"
     - name: Run tests
       run: make test
