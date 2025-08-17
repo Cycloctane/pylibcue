@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pylibcue"
-version = "0.2.0"
+version = "0.2.1"
 requires-python = ">=3.10"
 authors = [
   {name = "Cycloctane", email = "Cycloctane@octane.top"},
@@ -30,6 +30,7 @@ classifiers = [
 
 [project.urls]
 Repository = "https://github.com/Cycloctane/pylibcue.git"
+Changelog = "https://github.com/Cycloctane/pylibcue/blob/main/CHANGELOG.rst"
 
 [tool.setuptools]
 packages = ["pylibcue"]
