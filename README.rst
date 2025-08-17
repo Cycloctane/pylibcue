@@ -17,10 +17,13 @@ Compile from source
 
 Requirements: bison, flex, make.
 
+Clone the repo with ``--recurse-submodules`` argument.
+
 .. code-block:: bash
 
-    pip install --upgrade build
-    make wheel
+    pip install --upgrade setuptools Cython build
+    make test
+    make
 
 Usage
 -----
