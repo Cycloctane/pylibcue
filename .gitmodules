@@ -1,4 +1,4 @@
 [submodule "libcue"]
 	path = vendor/libcue
-	url = https://github.com/lipnitsk/libcue.git
+	url = https://github.com/Cycloctane/libcue.git
 	branch = master
