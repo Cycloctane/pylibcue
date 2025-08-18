@@ -26,7 +26,7 @@ sdist: parser
 	$(PYTHON) -m build --sdist
 
 wheel: parser
-	LIBCUE_QUIET_MODE=y LIBCUE_PATH=$(LIBCUE) CC=$(CC) $(PYTHON) -m build --wheel
+	LIBCUE_PATH=$(LIBCUE) CC=$(CC) $(PYTHON) -m build --wheel
 
 all: sdist wheel
 
