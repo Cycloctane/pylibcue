@@ -164,6 +164,13 @@ cdef class Cd:
             return None
         return content.decode(encoding=self.encoding)
 
+    @property
+    def catalog(self):
+        cdef const char *content = libcue.cd_get_catalog(self._cd)
+        if content is NULL:
+            return None
+        return content.decode(encoding=self.encoding)
+
     def __len__(self):
         return self.get_ntrack()
 

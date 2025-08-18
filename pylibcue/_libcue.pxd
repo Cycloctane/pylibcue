@@ -66,6 +66,7 @@ cdef extern from "libcue.h" nogil:
 
     # CD functions
     const char *cd_get_cdtextfile(const Cd *cd)
+    const char *cd_get_catalog(const Cd *cd)
     int cd_get_ntrack(const Cd *cd)
 
     # CDTEXT functions

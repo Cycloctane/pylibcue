@@ -21,6 +21,7 @@ class TestCue(unittest.TestCase):
 
     def test_example(self):
         cd = pylibcue.Cd.from_file(TEST_DATA / "example.cue")
+        self.assertEqual(cd.catalog, "4549767191621")
         self.assertEqual(cd.cdtext.performer, "サンドリオン")
         self.assertEqual(cd.cdtext.title, "天体図")
         self.assertEqual(len(cd), 4)
