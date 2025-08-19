@@ -25,6 +25,9 @@ class TestCue(unittest.TestCase):
         self.assertEqual(cd.cdtext.performer, "サンドリオン")
         self.assertEqual(cd.cdtext.title, "天体図")
         self.assertEqual(len(cd), 4)
+        self.assertEqual(len(cd.cdtext._asdict()), 11)
+        self.assertEqual(len(cd.rem._asdict()), 5)
+        self.assertEqual(list(cd.cdtext._asdict().values()).count(None), 11 - 2)
 
         for i in cd:
             self.assertEqual(i.filename, "COCC-18150.wav")
@@ -32,25 +35,31 @@ class TestCue(unittest.TestCase):
             self.assertEqual(i.cdtext.performer, "サンドリオン")
 
         track_01 = cd[0]
+        self.assertEqual(track_01.index, 1)
         self.assertEqual(track_01.cdtext.title, "天体図")
         self.assertEqual(track_01.isrc, "JPCO02329890")
         self.assertEqual(track_01.start, (0, 0, 0))
         self.assertEqual(track_01.length, (4, 8, 50))
         self.assertEqual(track_01.zero_pre, None)
+        self.assertTrue(track_01 in cd)
 
         track_02 = cd[1]
+        self.assertEqual(track_02.index, 2)
         self.assertEqual(track_02.cdtext.title, "ゆびきりの唄")
         self.assertEqual(track_02.isrc, "JPCO02329840")
         self.assertEqual(track_02.start, (4, 10, 59))
         self.assertEqual(track_02.length, (4, 4, 32))
         self.assertEqual(track_02.zero_pre, (0, 2, 9))
+        self.assertTrue(track_02 in cd)
 
         track_04 = cd[3]
+        self.assertEqual(track_04.index, 4)
         self.assertEqual(track_04.cdtext.title, "ゆびきりの唄 (off vocal ver.)")
         self.assertEqual(track_04.isrc, "JPCO02329849")
         self.assertEqual(track_04.start, (12, 27, 43))
         self.assertIs(track_04.length, None)
         self.assertEqual(track_04.zero_pre, (0, 2, 18))
+        self.assertTrue(track_04 in cd)
 
     def test_more(self):
         cd = pylibcue.Cd.from_file(TEST_DATA / "more.cue")
@@ -88,12 +97,12 @@ class TestParsing(unittest.TestCase):
     def test_error_unreadable(self):
         with self.assertRaises(IOError) as e:
             _ = pylibcue.Cd.from_file("not_exist.cue")
-        self.assertEqual(str(e.exception), "Failed to read file.")
+        self.assertEqual(str(e.exception), "Failed to read file")
 
     def test_error_parse(self):
         with self.assertRaises(ValueError) as e:
             _ = pylibcue.Cd.from_str("123456")
-        self.assertEqual(str(e.exception), "Failed to parse cue string.")
+        self.assertEqual(str(e.exception), "Failed to parse cue string")
 
 
 if __name__ == "__main__":

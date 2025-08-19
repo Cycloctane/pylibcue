@@ -17,7 +17,7 @@ cdef dict _PTI = {
 
 cdef dict _REM = {
     "date": libcue.REM_DATE,
-    "alnum_gain": libcue.REM_REPLAYGAIN_ALBUM_GAIN,
+    "album_gain": libcue.REM_REPLAYGAIN_ALBUM_GAIN,
     "album_peak": libcue.REM_REPLAYGAIN_ALBUM_PEAK,
     "track_gain": libcue.REM_REPLAYGAIN_TRACK_GAIN,
     "track_peak": libcue.REM_REPLAYGAIN_TRACK_PEAK,
@@ -36,14 +36,24 @@ cdef class CDText:
             self._cdtext = cdtext
             self._ref = ref
 
-    def __init__(self):
-        raise NotImplementedError
+    __slots__ = tuple(_PTI.keys())
 
-    def __getattr__(self, item):
+    cdef object _getattr(self, str item):
         cdef const char *content = libcue.cdtext_get(_PTI[item], self._cdtext)
         if content is NULL:
             return None
         return content.decode(encoding=self._ref.encoding)
+
+    def __init__(self):
+        raise NotImplementedError
+
+    def __getattr__(self, item):
+        if item not in self.__slots__:
+            raise AttributeError(f"Cannot extract {item} from CD-TEXT")
+        return self._getattr(item)
+
+    def _asdict(self):
+        return {item: self._getattr(item) for item in self.__slots__}
 
 cdef class Rem:
     """Metadata in REM fields."""
@@ -58,14 +68,24 @@ cdef class Rem:
             self._rem = rem
             self._ref = ref
 
-    def __init__(self):
-        raise NotImplementedError
+    __slots__ = tuple(_REM.keys())
 
-    def __getattr__(self, item):
+    cdef object _getattr(self, str item):
         cdef const char *content = libcue.rem_get(_REM[item], self._rem)
         if content is NULL:
             return None
         return content.decode(encoding=self._ref.encoding)
+
+    def __init__(self):
+        raise NotImplementedError
+
+    def __getattr__(self, item):
+        if item not in self.__slots__:
+            raise AttributeError(f"Cannot extract {item} from REM fields")
+        return self._getattr(item)
+
+    def _asdict(self):
+        return {item: self._getattr(item) for item in self.__slots__}
 
 cdef class Cd:
     """Represents a CD described by CUE sheet.
@@ -89,7 +109,7 @@ cdef class Cd:
             libcue.cd_delete(self._cd)
             self._cd = NULL
 
-    cdef int get_ntrack(self) nogil:
+    cdef int _get_ntrack(self) nogil:
         return libcue.cd_get_ntrack(self._cd)
 
     # public
@@ -97,7 +117,7 @@ cdef class Cd:
     def __init__(self, *args, **kwargs):
         raise NotImplementedError(
             "Use classmethods (Cd.from_str and Cd.from_file) "
-            "to create Cd object from CUE contents."
+            "to create Cd object from CUE contents"
         )
 
     @classmethod
@@ -111,12 +131,12 @@ cdef class Cd:
         cdef const char *_path = encoded_path
         cdef FILE *fp = fopen(_path, "r")
         if fp is NULL:
-            raise IOError("Failed to read file.")
+            raise IOError("Failed to read file")
 
         cdef libcue.Cd *cd = libcue.cue_parse_file(fp)
         fclose(fp)
         if cd is NULL:
-            raise ValueError("Failed to parse cue file.")
+            raise ValueError("Failed to parse cue file")
 
         cdef Cd obj = cls.__new__(cls)
         obj._init(cd, encoding)
@@ -132,7 +152,7 @@ cdef class Cd:
         cdef const char *content = encoded
         cdef libcue.Cd *cd = libcue.cue_parse_string(content)
         if cd is NULL:
-            raise ValueError("Failed to parse cue string.")
+            raise ValueError("Failed to parse cue string")
         cdef Cd obj = cls.__new__(cls)
         obj._init(cd, "utf-8")
         return obj
@@ -172,32 +192,46 @@ cdef class Cd:
         return content.decode(encoding=self.encoding)
 
     def __len__(self):
-        return self.get_ntrack()
+        return self._get_ntrack()
 
     def __getitem__(self, int index):
-        if index < 0 or index >= self.get_ntrack():
+        if index < 0 or index >= self._get_ntrack():
             raise IndexError("Track index out of range")
         cdef Track track = Track.__new__(Track)
-        track._init(libcue.cd_get_track(self._cd, index + 1), self)
+        track._init(libcue.cd_get_track(self._cd, index + 1), index + 1, self)
         return track
+
+    def __contains__(self, Track track):
+        cdef int i
+        for i in range(self._get_ntrack()):
+            if track._track == libcue.cd_get_track(self._cd, i + 1):
+                return True
+        return False
 
 cdef class Track:
     """Represents a single track from CD in CUE sheet."""
 
     cdef:
         libcue.Track *_track
+        int _index
         Cd _ref
 
-        void _init(self, libcue.Track *track, Cd ref):
+        void _init(self, libcue.Track *track, int index, Cd ref):
             if track is NULL:
                 raise MemoryError
             self._track = track
+            self._index = index
             self._ref = ref
 
     # public
 
     def __init__(self):
         raise NotImplementedError
+
+    @property
+    def index(self):
+        """Track index in TRACK field. (Start from 1)"""
+        return self._index
 
     @property
     def cdtext(self):
