@@ -1,5 +1,6 @@
 # cython: language_level=3, auto_pickle=False
 
+from cython cimport pymutex
 from libc.stdio cimport fopen, fclose, FILE
 from os import fsencode
 
@@ -87,6 +88,8 @@ cdef class Rem:
     def _asdict(self):
         return {item: self._getattr(item) for item in self.__slots__}
 
+cdef pymutex _parser_lock
+
 cdef class Cd:
     """Represents a CD described by CUE sheet.
     Its tracks are accessible via index and iteration.
@@ -129,12 +132,15 @@ cdef class Cd:
         """
         cdef bytes encoded_path = fsencode(path)
         cdef const char *_path = encoded_path
-        cdef FILE *fp = fopen(_path, "r")
-        if fp is NULL:
-            raise IOError("Failed to read file")
-
-        cdef libcue.Cd *cd = libcue.cue_parse_file(fp)
-        fclose(fp)
+        cdef FILE *fp
+        cdef libcue.Cd *cd
+        with nogil:
+            fp = fopen(_path, "r")
+            if fp is NULL:
+                raise IOError("Failed to read file")
+            with _parser_lock:
+                cd = libcue.cue_parse_file(fp)
+            fclose(fp)
         if cd is NULL:
             raise ValueError("Failed to parse cue file")
 
@@ -150,7 +156,9 @@ cdef class Cd:
         """
         cdef bytes encoded = string.encode()
         cdef const char *content = encoded
-        cdef libcue.Cd *cd = libcue.cue_parse_string(content)
+        cdef libcue.Cd *cd
+        with nogil, _parser_lock:
+            cd = libcue.cue_parse_string(content)
         if cd is NULL:
             raise ValueError("Failed to parse cue string")
         cdef Cd obj = cls.__new__(cls)
