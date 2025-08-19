@@ -1,3 +1,14 @@
+v0.3.0
+------
+
+\+ `Cycloctane/libcue v2.3.0.dev2
+<https://github.com/Cycloctane/libcue/tree/v2.3.0.dev2>`_
+
+- Add support for CATALOG and INDEX fields.
+- Add _asdict() method to CDText and Rem.
+- Fix CUE syntax error still showing if installed from sdist.
+- Fix album_gain property name typo.
+
 v0.2.1
 ------
 

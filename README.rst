@@ -5,9 +5,9 @@ pylibcue is a CUE sheet parser library for python. It provides fast and reliable
 CUE sheets parsing interfaces for python by wrapping `libcue
 <https://github.com/lipnitsk/libcue>`_ C library with Cython.
 
-*Note:* from pylibcue v0.2.1, pylibcue uses a libcue fork with custom patches
-(`Cycloctane/libcue <https://github.com/Cycloctane/libcue>`_) instead of original
-libcue to provide additional bugfixes and features.
+*Note:* since v0.2.1, pylibcue uses libcue fork with custom patches (`Cycloctane/libcue
+<https://github.com/Cycloctane/libcue>`_) instead of original libcue to provide
+additional bugfixes and features.
 
 Install
 -------
@@ -51,7 +51,7 @@ Extract CD metadata and iterate through tracks in CD:
     print("Tracks:")
 
     for tr in cd:
-        print(f"{tr.start} - {tr.cdtext.title} - {tr.cdtext.performer}")
+        print(f"TRACK{tr.index:02d}: {tr.cdtext.title} - {tr.cdtext.performer}")
 
 License
 -------
