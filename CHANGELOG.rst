@@ -1,3 +1,13 @@
+v0.4.0
+------
+
+\+ `Cycloctane/libcue v2.3.0.dev3
+<https://github.com/Cycloctane/libcue/tree/v2.3.0.dev3>`_
+
+- Build wheels for Python 3.14.
+- Add support for "REM COMMENT" fields.
+- Parse "REM DISCID" and "REM COMPOSER" (stored in cdtext as "DISC_ID" and "COMPOSER").
+
 v0.3.0
 ------
 
