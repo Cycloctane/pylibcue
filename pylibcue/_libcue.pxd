@@ -42,6 +42,7 @@ cdef extern from "libcue.h" nogil:
 
     enum RemType:
         REM_DATE
+        REM_COMMENT
         REM_REPLAYGAIN_ALBUM_GAIN
         REM_REPLAYGAIN_ALBUM_PEAK
         REM_REPLAYGAIN_TRACK_GAIN
