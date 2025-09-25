@@ -18,6 +18,7 @@ cdef dict _PTI = {
 
 cdef dict _REM = {
     "date": libcue.REM_DATE,
+    "comment": libcue.REM_COMMENT,
     "album_gain": libcue.REM_REPLAYGAIN_ALBUM_GAIN,
     "album_peak": libcue.REM_REPLAYGAIN_ALBUM_PEAK,
     "track_gain": libcue.REM_REPLAYGAIN_TRACK_GAIN,

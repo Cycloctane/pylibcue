@@ -26,9 +26,10 @@ class TestCue(unittest.TestCase):
         self.assertEqual(cd.cdtext.title, "天体図")
         self.assertEqual(cd.cdtext.disc_id, "3503E004")
         self.assertEqual(cd.cdtext.composer, "")
+        self.assertEqual(cd.rem.comment, "ExactAudioCopy v1.6")
         self.assertEqual(len(cd), 4)
         self.assertEqual(len(cd.cdtext._asdict()), 11)
-        self.assertEqual(len(cd.rem._asdict()), 5)
+        self.assertEqual(len(cd.rem._asdict()), 6)
         self.assertEqual(list(cd.cdtext._asdict().values()).count(None), 11 - 4)
 
         for i in cd:
