@@ -78,7 +78,7 @@ cdef extern from "libcue.h" nogil:
     # REM functions
     Rem *cd_get_rem(const Cd *cd)
     Rem *track_get_rem(const Track *track)
-    const char *rem_get(unsigned int cmt, Rem *rem)
+    const char *rem_get(RemType cmt, Rem *rem)
 
     # Track functions
     Track *cd_get_track(const Cd *cd, int i)
