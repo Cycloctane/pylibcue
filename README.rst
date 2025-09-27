@@ -38,8 +38,9 @@ Create a CD instance by parsing a CUE sheet file or string:
 
     import pylibcue
 
-    cd = pylibcue.parse_file("./example.cue")
-    # cd = pylibcue.parse_str("...")
+    cd = pylibcue.parse_file("./example.cue", encoding="utf-8")
+    # or
+    cd = pylibcue.parse_str("...")
 
 Extract CD metadata and iterate through tracks in CD:
 
@@ -52,6 +53,18 @@ Extract CD metadata and iterate through tracks in CD:
 
     for tr in cd:
         print(f"TRACK{tr.index:02d}: {tr.cdtext.title} - {tr.cdtext.performer}")
+
+cueprint
+^^^^^^^^
+
+pylibcue also provides a command line tool ``cueprint.py`` to dump information
+from CUE sheet. (python version of cuetools ``cueprint`` and ``cuebreakpoints``)
+
+.. code-block:: bash
+
+    cueprint.py ./example.cue
+    # or
+    python3 -m pylibcue.cueprint ./example.cue
 
 License
 -------

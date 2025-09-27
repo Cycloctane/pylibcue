@@ -16,6 +16,7 @@ license-files = ["COPYING", "vendor/libcue/LICENSE"]
 keywords = ["cue", "libcue", "cuetools", "audio", "music", "cd", "metadata"]
 classifiers = [
   "Development Status :: 4 - Beta",
+  "Topic :: Utilities",
   "Topic :: Multimedia",
   "Topic :: Multimedia :: Sound/Audio :: CD Audio",
   "Topic :: Multimedia :: Sound/Audio :: CD Audio :: CD Ripping",
@@ -28,6 +29,9 @@ classifiers = [
   "Programming Language :: Python :: 3.14",
   "Programming Language :: Cython",
 ]
+
+[project.scripts]
+"cueprint.py" = "pylibcue.cueprint:main"
 
 [project.urls]
 Repository = "https://github.com/Cycloctane/pylibcue.git"
