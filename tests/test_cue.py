@@ -19,7 +19,7 @@ class TestCue(unittest.TestCase):
         self.assertIsNotNone(cd[1].rem)
         self.assertIsNone(cd[1].cdtext.title)
 
-    def test_example(self):
+    def test_example_disc(self):
         cd = pylibcue.Cd.from_file(TEST_DATA / "example.cue")
         self.assertEqual(cd.catalog, "4549767191621")
         self.assertEqual(cd.cdtext.performer, "サンドリオン")
@@ -27,42 +27,39 @@ class TestCue(unittest.TestCase):
         self.assertEqual(cd.cdtext.disc_id, "3503E004")
         self.assertEqual(cd.cdtext.composer, "")
         self.assertEqual(cd.rem.comment, "ExactAudioCopy v1.6")
-        self.assertEqual(len(cd), 4)
         self.assertEqual(len(cd.cdtext._asdict()), 11)
         self.assertEqual(len(cd.rem._asdict()), 6)
         self.assertEqual(list(cd.cdtext._asdict().values()).count(None), 11 - 4)
 
+    def test_example_tracks(self):
+        cd = pylibcue.Cd.from_file(TEST_DATA / "example.cue")
+        self.assertEqual(len(cd), 4)
         for i in cd:
             self.assertEqual(i.filename, "COCC-18150.wav")
             self.assertIs(i.mode, pylibcue.TrackMode.AUDIO)
             self.assertEqual(i.cdtext.performer, "サンドリオン")
+            self.assertTrue(i in cd)
 
-        track_01 = cd[0]
-        self.assertEqual(track_01.index, 1)
-        self.assertEqual(track_01.cdtext.title, "天体図")
-        self.assertEqual(track_01.isrc, "JPCO02329890")
-        self.assertEqual(track_01.start, (0, 0, 0))
-        self.assertEqual(track_01.length, (4, 8, 50))
-        self.assertEqual(track_01.zero_pre, None)
-        self.assertTrue(track_01 in cd)
+        self.assertEqual(cd[0].index, 1)
+        self.assertEqual(cd[0].cdtext.title, "天体図")
+        self.assertEqual(cd[0].isrc, "JPCO02329890")
+        self.assertEqual(cd[0].start, (0, 0, 0))
+        self.assertEqual(cd[0].length, (4, 8, 50))
+        self.assertEqual(cd[0].zero_pre, None)
 
-        track_02 = cd[1]
-        self.assertEqual(track_02.index, 2)
-        self.assertEqual(track_02.cdtext.title, "ゆびきりの唄")
-        self.assertEqual(track_02.isrc, "JPCO02329840")
-        self.assertEqual(track_02.start, (4, 10, 59))
-        self.assertEqual(track_02.length, (4, 4, 32))
-        self.assertEqual(track_02.zero_pre, (0, 2, 9))
-        self.assertTrue(track_02 in cd)
+        self.assertEqual(cd[1].index, 2)
+        self.assertEqual(cd[1].cdtext.title, "ゆびきりの唄")
+        self.assertEqual(cd[1].isrc, "JPCO02329840")
+        self.assertEqual(cd[1].start, (4, 10, 59))
+        self.assertEqual(cd[1].length, (4, 4, 32))
+        self.assertEqual(cd[1].zero_pre, (0, 2, 9))
 
-        track_04 = cd[3]
-        self.assertEqual(track_04.index, 4)
-        self.assertEqual(track_04.cdtext.title, "ゆびきりの唄 (off vocal ver.)")
-        self.assertEqual(track_04.isrc, "JPCO02329849")
-        self.assertEqual(track_04.start, (12, 27, 43))
-        self.assertIs(track_04.length, None)
-        self.assertEqual(track_04.zero_pre, (0, 2, 18))
-        self.assertTrue(track_04 in cd)
+        self.assertEqual(cd[3].index, 4)
+        self.assertEqual(cd[3].cdtext.title, "ゆびきりの唄 (off vocal ver.)")
+        self.assertEqual(cd[3].isrc, "JPCO02329849")
+        self.assertEqual(cd[3].start, (12, 27, 43))
+        self.assertIs(cd[3].length, None)
+        self.assertEqual(cd[3].zero_pre, (0, 2, 18))
 
     def test_more(self):
         cd = pylibcue.Cd.from_file(TEST_DATA / "more.cue")
@@ -79,15 +76,38 @@ class TestCue(unittest.TestCase):
         self.assertEqual(cd[0].zero_post, (0, 1, 0))
         self.assertTrue(cd[0] & pylibcue.TrackFlag.COPY_PERMITTED)
         self.assertTrue(cd[0] & pylibcue.TrackFlag.FOUR_CHANNEL)
+        self.assertTrue(cd[0] & pylibcue.TrackFlag.ANY)
+        self.assertFalse(cd[0] & pylibcue.TrackFlag.PRE_EMPHASIS)
         self.assertFalse(cd[0] & pylibcue.TrackFlag.NONE)
+
+    def test_multi(self):
+        cd = pylibcue.Cd.from_file(TEST_DATA / "multi.cue")
+        self.assertEqual(len(cd), 4)
+
+        self.assertEqual(cd[0].filename, "COCC-18148.wav")
+        self.assertEqual(cd[0].index, 1)
+        self.assertEqual(cd[0].start, (0, 0, 0))
+        self.assertEqual(cd[0].length, (4, 43, 52))
+        self.assertEqual(cd[1].filename, "COCC-18148.wav")
+        self.assertEqual(cd[1].index, 2)
+        self.assertEqual(cd[1].start, (4, 45, 53))
+        self.assertIsNone(cd[1].length)
+
+        self.assertEqual(cd[2].filename, "COCC-18150.wav")
+        self.assertEqual(cd[2].index, 3)
+        self.assertEqual(cd[2].start, (0, 0, 0))
+        self.assertEqual(cd[2].length, (4, 8, 50))
+        self.assertEqual(cd[3].filename, "COCC-18150.wav")
+        self.assertEqual(cd[3].index, 4)
+        self.assertEqual(cd[3].start, (4, 10, 59))
+        self.assertIsNone(cd[3].length)
 
 
 class TestParsing(unittest.TestCase):
 
     def test_from_str(self):
         with open(TEST_DATA / "example.cue", "r", encoding='utf-8') as f:
-            content = f.read()
-        cd = pylibcue.Cd.from_str(content)
+            cd = pylibcue.Cd.from_str(f.read())
         self.assertEqual(cd.cdtext.title, "天体図")
         self.assertEqual(len(cd), 4)
 
