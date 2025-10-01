@@ -57,8 +57,10 @@ Extract CD metadata and iterate through tracks in CD:
 cueprint
 ^^^^^^^^
 
-pylibcue also provides a command line tool ``cueprint.py`` to dump information
+pylibcue also provides a command line tool ``cueprint.py`` to dump all information
 from CUE sheet. (python version of cuetools ``cueprint`` and ``cuebreakpoints``)
+
+Use ``cueprint.py`` to see how many fields pylibcue can extract from CUE sheet:
 
 .. code-block:: bash
 

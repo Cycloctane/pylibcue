@@ -1,3 +1,14 @@
+v0.5.0
+------
+
+\+ `Cycloctane/libcue v2.3.0.dev4
+<https://github.com/Cycloctane/libcue/tree/v2.3.0.dev4>`_
+
+- Fix typing bug of ``Track.mode``.
+- Add ``cueprint.py`` cli tool.
+- Add support for "REM DISCNUMBER" and "REM TOTALDISCS" fields.
+- Optimize compilation and reduce binary size.
+
 v0.4.0
 ------
 
