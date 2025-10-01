@@ -10,7 +10,7 @@ LIBCUE_PATH = environ.get("LIBCUE_PATH", path.join("vendor", "libcue"))
 extensions = [
     Extension(
         "pylibcue._cue",
-        ["pylibcue/_cue.pyx", *(path.join(LIBCUE_PATH, i) for i in LIBCUE_SRC)],
+        [path.join("pylibcue", "_cue.pyx"), *(path.join(LIBCUE_PATH, i) for i in LIBCUE_SRC)],
         include_dirs=[LIBCUE_PATH],
         define_macros=[("LIBCUE_QUIET_MODE", None)],
         extra_compile_args=(
