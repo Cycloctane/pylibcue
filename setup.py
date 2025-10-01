@@ -14,7 +14,7 @@ extensions = [
         include_dirs=[LIBCUE_PATH],
         define_macros=[("LIBCUE_QUIET_MODE", None)],
         extra_compile_args=(
-            ["-fvisibility=hidden"] if get_default_compiler() != "msvc" else []
+            ["-fvisibility=hidden", "-g0"] if get_default_compiler() != "msvc" else []
         ),
         language="c",
     )
