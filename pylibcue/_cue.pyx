@@ -272,9 +272,20 @@ cdef class Track:
             return None
         return filename.decode(encoding=self._ref.encoding)
 
+    def get_index(self, int i):
+        """Get the time of a specific INDEX in the track.
+
+        :param i: Index number (usually 0 or 1)
+        :return: ``(minutes, seconds, frames)`` tuple,
+            or ``None`` if INDEX field does not exist
+        """
+        cdef long index = libcue.track_get_index(self._track, i)
+        return f2msf(index) if index >= 0 else None
+
     @property
     def start(self):
         """Start time of the track (skipped pre-gap duration).
+        Usually taken from INDEX 01 field.
 
         :return: ``(minutes, seconds, frames)`` tuple,
             or ``None`` if INDEX field does not exist

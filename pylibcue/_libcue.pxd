@@ -92,3 +92,4 @@ cdef extern from "libcue.h" nogil:
     long track_get_zero_pre(const Track *track)
     long track_get_zero_post(const Track *track)
     const char *track_get_isrc(const Track *track)
+    long track_get_index(const Track *track, int i)
