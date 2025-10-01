@@ -28,7 +28,7 @@ class TestCue(unittest.TestCase):
         self.assertEqual(cd.cdtext.composer, "")
         self.assertEqual(cd.rem.comment, "ExactAudioCopy v1.6")
         self.assertEqual(len(cd.cdtext._asdict()), 11)
-        self.assertEqual(len(cd.rem._asdict()), 6)
+        self.assertEqual(len(cd.rem._asdict()), 8)
         self.assertEqual(list(cd.cdtext._asdict().values()).count(None), 11 - 4)
 
     def test_example_tracks(self):
@@ -58,7 +58,7 @@ class TestCue(unittest.TestCase):
         self.assertEqual(cd[3].cdtext.title, "ゆびきりの唄 (off vocal ver.)")
         self.assertEqual(cd[3].isrc, "JPCO02329849")
         self.assertEqual(cd[3].start, (12, 27, 43))
-        self.assertIs(cd[3].length, None)
+        self.assertIsNone(cd[3].length)
         self.assertEqual(cd[3].zero_pre, (0, 2, 18))
 
     def test_more(self):
@@ -71,6 +71,8 @@ class TestCue(unittest.TestCase):
         self.assertEqual(cd.cdtext.upc_isrc, "1234567890")
         self.assertEqual(cd.cdtext.genre, "Genre0")
         self.assertEqual(cd.rem.date, "2023")
+        self.assertEqual(cd.rem.disc_number, "1")
+        self.assertEqual(cd.rem.total_discs, "2")
         self.assertEqual(cd.cdtextfile, "cdtext0.cdt")
         self.assertEqual(cd[0].zero_pre, (0, 1, 0))
         self.assertEqual(cd[0].zero_post, (0, 1, 0))
