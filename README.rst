@@ -52,7 +52,7 @@ Extract CD metadata and iterate through tracks in CD:
     print("Tracks:")
 
     for tr in cd:
-        print(f"TRACK{tr.index:02d}: {tr.cdtext.title} - {tr.cdtext.performer}")
+        print(f"TRACK {tr.track_number:02d}: {tr.cdtext.title} - {tr.cdtext.performer}")
 
 cueprint
 ^^^^^^^^
