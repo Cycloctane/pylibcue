@@ -4,9 +4,11 @@ v0.5.0
 \+ `Cycloctane/libcue v2.3.0.dev4
 <https://github.com/Cycloctane/libcue/tree/v2.3.0.dev4>`_
 
-- Fix typing bug of ``Track.mode``.
+- Add ``Track.get_index()`` method to directly get the time of a specific INDEX.
+- Breaking change: rename previous ``Track.index`` property to ``Track.track_number``.
 - Add ``cueprint.py`` cli tool.
 - Add support for "REM DISCNUMBER" and "REM TOTALDISCS" fields.
+- Fix typing of ``Track.mode``.
 - Optimize compilation and reduce binary size.
 
 v0.4.0
