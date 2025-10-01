@@ -224,14 +224,14 @@ cdef class Track:
 
     cdef:
         libcue.Track *_track
-        int _index
+        int _track_number
         Cd _ref
 
-        void _init(self, libcue.Track *track, int index, Cd ref):
+        void _init(self, libcue.Track *track, int track_number, Cd ref):
             if track is NULL:
                 raise MemoryError
             self._track = track
-            self._index = index
+            self._track_number = track_number
             self._ref = ref
 
     # public
@@ -240,9 +240,9 @@ cdef class Track:
         raise NotImplementedError
 
     @property
-    def index(self):
-        """Track index in TRACK field. (Start from 1)"""
-        return self._index
+    def track_number(self):
+        """Track number in CD. (Start from 1)"""
+        return self._track_number
 
     @property
     def cdtext(self):

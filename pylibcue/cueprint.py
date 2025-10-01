@@ -24,7 +24,7 @@ def cueprint(file: PathLike[str] | str, encoding: str = "utf-8") -> None:
     )
     for tr in cd:
         print(
-            f"Track {tr.index} Information",
+            f"Track {tr.track_number} Information",
             f"File: {tr.filename or '*Unknown*'}",
             *((f"Start: {_fmtmsf(tr.start)}",) if tr.start else ()),
             *((f"Length: {_fmtmsf(tr.length)}",) if tr.length else ()),
