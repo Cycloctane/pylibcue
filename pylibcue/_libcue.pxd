@@ -42,13 +42,13 @@ cdef extern from "libcue.h" nogil:
 
     enum RemType:
         REM_DATE
-        REM_COMMENT
-        REM_DISCNUMBER
-        REM_TOTALDISCS
         REM_REPLAYGAIN_ALBUM_GAIN
         REM_REPLAYGAIN_ALBUM_PEAK
         REM_REPLAYGAIN_TRACK_GAIN
         REM_REPLAYGAIN_TRACK_PEAK
+        REM_COMMENT
+        REM_DISCNUMBER
+        REM_TOTALDISCS
         REM_END
 
     ctypedef struct Cd:
