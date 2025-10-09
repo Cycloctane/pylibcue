@@ -8,7 +8,7 @@ _dump: Callable[[CDText | Rem], list[str]] = lambda x: [
     f"{k.capitalize()}: {v}" for k, v in x._asdict().items() if v
 ]
 
-_fmtmsf: Callable[[tuple[int, int, int]], str] = lambda x: "%d:%02d.%02d" % x
+_fmtmsf: Callable[[tuple[int, int, int]], str] = lambda x: "%02d:%02d.%02d" % x
 
 
 def cueprint(file: PathLike[str] | str, encoding: str = "utf-8") -> None:
@@ -39,7 +39,7 @@ def cueprint(file: PathLike[str] | str, encoding: str = "utf-8") -> None:
 def cuebreakpoints(file: PathLike[str] | str, encoding: str = "utf-8") -> None:
     print(
         *(
-            _fmtmsf(tr.start) for tr in Cd.from_file(file, encoding)
+            "%d:%02d:%02d" % tr.start for tr in Cd.from_file(file, encoding)
             if tr.start and tr.start != (0, 0, 0)
         ), sep="\n",
     )
@@ -55,11 +55,12 @@ def main() -> int:
         "--encoding", "-e", default="utf-8", help="file encoding (default: utf-8)"
     )
     parser.add_argument(
-        "--version", action="version", version=f"cueprint.py (pylibcue) v{__version__}"
+        "--version", "-v", action="version",
+        version=f"cueprint.py (pylibcue) v{__version__}",
     )
     parser.add_argument(
         "--breakpoints-only", action="store_true",
-        help="only print track breakpoints (cuebreakpoints)"
+        help="only print track breakpoints (cuebreakpoints)",
     )
     ns = parser.parse_args()
     if ns.breakpoints_only:
