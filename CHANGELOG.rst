@@ -1,3 +1,8 @@
+v0.5.1
+------
+
+- Fix ``cueprint.py`` msf output format.
+
 v0.5.0
 ------
 
