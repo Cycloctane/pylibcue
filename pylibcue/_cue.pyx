@@ -8,11 +8,16 @@ from . cimport _libcue as libcue
 from .mode import TrackMode
 
 cdef dict _PTI = {
-    "title": libcue.PTI_TITLE, "performer": libcue.PTI_PERFORMER,
-    "songwriter": libcue.PTI_SONGWRITER, "composer": libcue.PTI_COMPOSER,
-    "arranger": libcue.PTI_ARRANGER, "message": libcue.PTI_MESSAGE,
-    "disc_id": libcue.PTI_DISC_ID, "genre": libcue.PTI_GENRE,
-    "upc_isrc": libcue.PTI_UPC_ISRC, "size_info": libcue.PTI_SIZE_INFO,
+    "title": libcue.PTI_TITLE,
+    "performer": libcue.PTI_PERFORMER,
+    "songwriter": libcue.PTI_SONGWRITER,
+    "composer": libcue.PTI_COMPOSER,
+    "arranger": libcue.PTI_ARRANGER,
+    "message": libcue.PTI_MESSAGE,
+    "disc_id": libcue.PTI_DISC_ID,
+    "genre": libcue.PTI_GENRE,
+    "upc_isrc": libcue.PTI_UPC_ISRC,
+    "size_info": libcue.PTI_SIZE_INFO,
     "toc_info": libcue.PTI_TOC_INFO1
 }
 
@@ -28,7 +33,12 @@ cdef dict _REM = {
 }
 
 cdef class CDText:
-    """Metadata in CD-TEXT fields."""
+    """Metadata in CD-TEXT fields.
+    Supported attributes: title, performer, songwriter, composer, arranger, \
+message, disc_id, genre, upc_isrc, size_info, toc_info
+
+    Use ``._asdict()`` to dump all fields to a dictionary.
+    """
 
     cdef:
         libcue.Cdtext *_cdtext
@@ -40,8 +50,6 @@ cdef class CDText:
             self._cdtext = cdtext
             self._ref = ref
 
-    __slots__ = tuple(_PTI.keys())
-
     cdef object _getattr(self, str item):
         cdef const char *content = libcue.cdtext_get(_PTI[item], self._cdtext)
         if content is NULL:
@@ -52,15 +60,26 @@ cdef class CDText:
         raise NotImplementedError
 
     def __getattr__(self, item):
-        if item not in self.__slots__:
+        if item not in _PTI:
             raise AttributeError(f"Cannot extract {item} from CD-TEXT")
         return self._getattr(item)
 
+    def __getitem__(self, item):
+        if item not in _PTI:
+            raise KeyError(item)
+        return self._getattr(item)
+
     def _asdict(self):
-        return {item: self._getattr(item) for item in self.__slots__}
+        """Dump all CD-TEXT fields to a dictionary"""
+        return {item: self._getattr(item) for item in _PTI}
 
 cdef class Rem:
-    """Metadata in REM fields."""
+    """Metadata in REM fields.
+    Supported attributes: date, comment, disc_number, total_discs, \
+album_gain, album_peak, track_gain, track_peak
+
+    Use ``._asdict()`` to dump fields to a dictionary.
+    """
 
     cdef:
         libcue.Rem *_rem
@@ -72,8 +91,6 @@ cdef class Rem:
             self._rem = rem
             self._ref = ref
 
-    __slots__ = tuple(_REM.keys())
-
     cdef object _getattr(self, str item):
         cdef const char *content = libcue.rem_get(_REM[item], self._rem)
         if content is NULL:
@@ -84,12 +101,18 @@ cdef class Rem:
         raise NotImplementedError
 
     def __getattr__(self, item):
-        if item not in self.__slots__:
+        if item not in _REM:
             raise AttributeError(f"Cannot extract {item} from REM fields")
         return self._getattr(item)
 
+    def __getitem__(self, item):
+        if item not in _REM:
+            raise KeyError(item)
+        return self._getattr(item)
+
     def _asdict(self):
-        return {item: self._getattr(item) for item in self.__slots__}
+        """Dump all CD-TEXT fields to a dictionary"""
+        return {item: self._getattr(item) for item in _REM}
 
 cdef pymutex _parser_lock
 
@@ -102,7 +125,9 @@ cdef class Cd:
 
     cdef:
         libcue.Cd *_cd
-        readonly str encoding
+
+        public str encoding
+        """Encoding used for decoding text fields"""
 
         void _init(self, libcue.Cd *cd, str encoding):
             if cd is NULL:
@@ -114,9 +139,6 @@ cdef class Cd:
         if self._cd is not NULL:
             libcue.cd_delete(self._cd)
             self._cd = NULL
-
-    cdef int _get_ntrack(self) nogil:
-        return libcue.cd_get_ntrack(self._cd)
 
     # public
 
@@ -203,46 +225,39 @@ cdef class Cd:
         return content.decode(encoding=self.encoding)
 
     def __len__(self):
-        return self._get_ntrack()
+        return libcue.cd_get_ntrack(self._cd)
 
-    def __getitem__(self, int index):
-        if index < 0 or index >= self._get_ntrack():
+    def __getitem__(self, int idx):
+        if idx < 0 or idx >= len(self):
             raise IndexError("Track index out of range")
         cdef Track track = Track.__new__(Track)
-        track._init(libcue.cd_get_track(self._cd, index + 1), index + 1, self)
+        track._init(libcue.cd_get_track(self._cd, idx + 1), idx + 1, self)
         return track
 
     def __contains__(self, Track track):
-        cdef int i
-        for i in range(self._get_ntrack()):
-            if track._track == libcue.cd_get_track(self._cd, i + 1):
-                return True
-        return False
+        return track._ref is self
 
 cdef class Track:
     """Represents a single track from CD in CUE sheet."""
 
     cdef:
         libcue.Track *_track
-        int _track_number
         Cd _ref
+
+        readonly int track_number
+        """Track number in CD (Start from 1)"""
 
         void _init(self, libcue.Track *track, int track_number, Cd ref):
             if track is NULL:
                 raise MemoryError
             self._track = track
-            self._track_number = track_number
             self._ref = ref
+            self.track_number = track_number
 
     # public
 
     def __init__(self):
         raise NotImplementedError
-
-    @property
-    def track_number(self):
-        """Track number in CD. (Start from 1)"""
-        return self._track_number
 
     @property
     def cdtext(self):
