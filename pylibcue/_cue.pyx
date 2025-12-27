@@ -112,7 +112,7 @@ album_gain, album_peak, track_gain, track_peak
         return self._getattr(item)
 
     def _asdict(self):
-        """Dump all CD-TEXT fields to a dictionary"""
+        """Dump all REM fields to a dictionary"""
         return {item: self._getattr(item) for item in _REM}
 
 cdef pymutex _parser_lock
@@ -350,7 +350,7 @@ cdef class Track:
 
     @property
     def mode(self):
-        return TrackMode(<int> libcue.track_get_mode(self._track))
+        return TrackMode(libcue.track_get_mode(self._track))
 
     cpdef has_flag(self, int flag):
         """Check if the track has a specific flag set in FLAGS field.
