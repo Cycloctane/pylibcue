@@ -4,6 +4,7 @@ from cython cimport pymutex
 from libc.errno cimport errno
 from libc.stdio cimport fopen, fclose, FILE
 from os import fsencode, strerror
+import weakref
 
 from . cimport _libcue as libcue
 from .mode import TrackMode
@@ -44,6 +45,7 @@ message, disc_id, genre, upc_isrc, size_info, toc_info
     cdef:
         libcue.Cdtext *_cdtext
         Cd _ref
+        object __weakref__
 
         void _init(self, libcue.Cdtext *cdtext, Cd ref):
             if cdtext is NULL:
@@ -85,6 +87,7 @@ album_gain, album_peak, track_gain, track_peak
     cdef:
         libcue.Rem *_rem
         Cd _ref
+        object __weakref__
 
         void _init(self, libcue.Rem *rem, Cd ref):
             if rem is NULL:
@@ -126,6 +129,7 @@ cdef class Cd:
 
     cdef:
         libcue.Cd *_cd
+        list _track_cache, cdtext_cache, rem_cache  # weakref
 
         public str encoding
         """Encoding used for decoding text fields"""
@@ -135,6 +139,10 @@ cdef class Cd:
                 raise MemoryError
             self._cd = cd
             self.encoding = encoding
+            ntrack = libcue.cd_get_ntrack(cd)
+            self._track_cache = [None] * ntrack
+            self.cdtext_cache = [None] * (ntrack + 1)
+            self.rem_cache = [None] * (ntrack + 1)
 
     def __dealloc__(self):
         if self._cd is not NULL:
@@ -193,22 +201,22 @@ cdef class Cd:
 
     @property
     def cdtext(self):
-        """Metadata in CD-TEXT fields of CD section.
-
-        Creates new ``CDText`` instance on each access.
-        """
+        """Metadata in CD-TEXT fields of CD section."""
+        if (ref := self.cdtext_cache[0]) and (cached := ref()):
+            return cached
         cdef CDText cdtext = CDText.__new__(CDText)
         cdtext._init(libcue.cd_get_cdtext(self._cd), self)
+        self.cdtext_cache[0] = weakref.ref(cdtext)
         return cdtext
 
     @property
     def rem(self):
-        """Metadata in REM fields of CD section.
-
-        Creates new ``Rem`` instance on each access.
-        """
+        """Metadata in REM fields of CD section."""
+        if (ref := self.rem_cache[0]) and (cached := ref()):
+            return cached
         cdef Rem rem = Rem.__new__(Rem)
         rem._init(libcue.cd_get_rem(self._cd), self)
+        self.rem_cache[0] = weakref.ref(rem)
         return rem
 
     @property
@@ -231,8 +239,11 @@ cdef class Cd:
     def __getitem__(self, int idx):
         if idx < 0 or idx >= len(self):
             raise IndexError("Track index out of range")
+        if (ref := self._track_cache[idx]) and (cached := ref()):
+            return cached
         cdef Track track = Track.__new__(Track)
         track._init(libcue.cd_get_track(self._cd, idx + 1), idx + 1, self)
+        self._track_cache[idx] = weakref.ref(track)
         return track
 
     def __contains__(self, Track track):
@@ -244,6 +255,7 @@ cdef class Track:
     cdef:
         libcue.Track *_track
         Cd _ref
+        object __weakref__
 
         readonly int track_number
         """Track number in CD (Start from 1)"""
@@ -262,22 +274,22 @@ cdef class Track:
 
     @property
     def cdtext(self):
-        """Metadata in CD-TEXT fields of track section.
-
-        Creates new ``CDText`` instance on each access.
-        """
+        """Metadata in CD-TEXT fields of track section"""
+        if (ref := self._ref.cdtext_cache[self.track_number]) and (cached := ref()):
+            return cached
         cdef CDText cdtext = CDText.__new__(CDText)
         cdtext._init(libcue.track_get_cdtext(self._track), self._ref)
+        self._ref.cdtext_cache[self.track_number] = weakref.ref(cdtext)
         return cdtext
 
     @property
     def rem(self):
-        """Metadata in REM fields of track section.
-
-        Creates new ``Rem`` instance on each access.
-        """
+        """Metadata in REM fields of track section"""
+        if (ref := self._ref.rem_cache[self.track_number]) and (cached := ref()):
+            return cached
         cdef Rem rem = Rem.__new__(Rem)
         rem._init(libcue.track_get_rem(self._track), self._ref)
+        self._ref.rem_cache[self.track_number] = weakref.ref(rem)
         return rem
 
     @property
@@ -350,7 +362,7 @@ cdef class Track:
 
     @property
     def mode(self):
-        return TrackMode(<int> libcue.track_get_mode(self._track))
+        return TrackMode(libcue.track_get_mode(self._track))
 
     cpdef has_flag(self, int flag):
         """Check if the track has a specific flag set in FLAGS field.

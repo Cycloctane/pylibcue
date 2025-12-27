@@ -136,5 +136,33 @@ class TestParsing(unittest.TestCase):
         self.assertEqual(str(e.exception), "Failed to parse cue string")
 
 
+class TestObject(unittest.TestCase):
+
+    def setUp(self):
+        self.cd = pylibcue.Cd.from_file(TEST_DATA / "example.cue")
+
+    def test_init_error(self):
+        for init in (pylibcue.Cd, pylibcue.Track, pylibcue.CDText, pylibcue.Rem):
+            with self.assertRaises(NotImplementedError):
+                init()
+
+    def test_identity(self):
+        cdtext, rem, track = self.cd.cdtext, self.cd.rem, self.cd[0]
+        self.assertIs(cdtext, self.cd.cdtext)
+        self.assertIs(rem, self.cd.rem)
+        self.assertIs(track, self.cd[0])
+        self.assertIs(track.cdtext, self.cd[0].cdtext)
+        self.assertIs(track.rem, self.cd[0].rem)
+        self.assertIs(self.cd[1], self.cd[1])
+        self.assertIs(self.cd[2].cdtext, self.cd[2].cdtext)
+
+    def test_hashable(self):
+        track01, track02, track1 = self.cd[0], self.cd[0], self.cd[1]
+        self.assertEqual(len({track01, track02}), 1)
+        self.assertEqual(len({track01.cdtext, track02.cdtext}), 1)
+        self.assertEqual(len({track01.rem, track02.rem}), 1)
+        self.assertEqual(len({track01, track1}), 2)
+
+
 if __name__ == "__main__":
     unittest.main()
