@@ -1,8 +1,9 @@
 # cython: language_level=3, auto_pickle=False
 
 from cython cimport pymutex
+from libc.errno cimport errno
 from libc.stdio cimport fopen, fclose, FILE
-from os import fsencode
+from os import fsencode, strerror
 
 from . cimport _libcue as libcue
 from .mode import TrackMode
@@ -162,12 +163,12 @@ cdef class Cd:
         with nogil:
             fp = fopen(_path, "r")
             if fp is NULL:
-                raise IOError("Failed to read file")
+                raise IOError(f"Failed to read cue file {path!r} ({strerror(errno)})")
             with _parser_lock:
                 cd = libcue.cue_parse_file(fp)
             fclose(fp)
         if cd is NULL:
-            raise ValueError("Failed to parse cue file")
+            raise ValueError(f"Failed to parse cue file {path!r}")
 
         cdef Cd obj = cls.__new__(cls)
         obj._init(cd, encoding)

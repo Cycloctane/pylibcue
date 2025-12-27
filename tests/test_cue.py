@@ -127,12 +127,10 @@ class TestParsing(unittest.TestCase):
         self.assertEqual(cd.cdtext.title, "天体図")
         self.assertEqual(cd[0].cdtext.title, "天体図")
 
-    def test_error_unreadable(self):
+    def test_parsing_error(self):
         with self.assertRaises(IOError) as e:
             _ = pylibcue.Cd.from_file("not_exist.cue")
-        self.assertEqual(str(e.exception), "Failed to read file")
-
-    def test_error_parse(self):
+        self.assertTrue(str(e.exception).startswith("Failed to read cue file 'not_exist.cue'"))
         with self.assertRaises(ValueError) as e:
             _ = pylibcue.Cd.from_str("123456")
         self.assertEqual(str(e.exception), "Failed to parse cue string")
