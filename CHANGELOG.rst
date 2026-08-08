@@ -1,7 +1,15 @@
+v0.5.2
+------
+
+- Fix ``Rem`` not exported in ``__init__.py``.
+- Make Cd encoding configurable after initialization.
+- Improve docstrings and error messages.
+- abi3 (Stable ABI) wheels.
+
 v0.5.1
 ------
 
-- Fix ``cueprint.py`` msf output format.
+- Fix ``cueprint.py`` output format.
 
 v0.5.0
 ------
