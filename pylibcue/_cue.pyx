@@ -229,6 +229,8 @@ cdef class Cd:
         return libcue.cd_get_ntrack(self._cd)
 
     def __getitem__(self, int idx):
+        if idx < 0:
+            idx += len(self)
         if idx < 0 or idx >= len(self):
             raise IndexError("Track index out of range")
         cdef Track track = Track.__new__(Track)

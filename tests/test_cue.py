@@ -61,6 +61,7 @@ class TestCue(unittest.TestCase):
         self.assertEqual(cd[1].zero_pre, (0, 2, 9))
 
         self.assertEqual(cd[3].track_number, 4)
+        self.assertEqual(cd[3].track_number, cd[-1].track_number)
         self.assertEqual(cd[3].cdtext.title, "ゆびきりの唄 (off vocal ver.)")
         self.assertEqual(cd[3].isrc, "JPCO02329849")
         self.assertEqual(cd[3].get_index(0), (12, 25, 25))
