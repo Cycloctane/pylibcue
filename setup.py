@@ -12,12 +12,13 @@ extensions = [
         "pylibcue._cue",
         [path.join("pylibcue", "_cue.pyx"), *(path.join(LIBCUE_PATH, i) for i in LIBCUE_SRC)],
         include_dirs=[LIBCUE_PATH],
-        define_macros=[("LIBCUE_QUIET_MODE", None)],
+        define_macros=[("LIBCUE_QUIET_MODE", None), ("Py_LIMITED_API", 0x030A0000)],
         extra_compile_args=(
             ["-fvisibility=hidden", "-g0"] if get_default_compiler() != "msvc" else []
         ),
+        py_limited_api=True,
         language="c",
     )
 ]
 
-setup(ext_modules=cythonize(extensions))
+setup(ext_modules=cythonize(extensions), options={"bdist_wheel": {"py_limited_api": "cp310"}},)
