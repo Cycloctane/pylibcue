@@ -8,7 +8,7 @@ LIBCUE ?= vendor/libcue
 default: all
 
 $(LIBCUE)/cue_scanner.c: $(LIBCUE)/cue_scanner.l
-	$(LEX) -o $@ $^
+	$(LEX) --nounistd -o $@ $^
 
 $(LIBCUE)/cue_parser.c $(LIBCUE)/cue_parser.h: $(LIBCUE)/cue_parser.y
 	$(YACC) -l -d -o $(firstword $@) $^
