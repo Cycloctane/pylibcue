@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-linux:
-    name: Build and Test (Linux)
+  free-threaded-linux:
+    name: Build and Test free-threaded Wheels (linux)
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
@@ -16,9 +16,9 @@ jobs:
         submodules: true
     - uses: actions/setup-python@v7
       with:
-        python-version: 3.14
+        python-version: 3.15t
     - name: Install dependencies
-      run: python -m pip install --upgrade setuptools Cython build abi3audit auditwheel
+      run: python -m pip install --upgrade setuptools Cython build auditwheel
     - name: Run tests
       run: make test
     - name: Build sdist
@@ -28,20 +28,20 @@ jobs:
       with:
         name: sdist
         path: dist/pylibcue*.tar.gz
-    - name: Build wheel (abi3)
-      run: make wheel-abi3
-    - name: Auditwheel
-      run: auditwheel repair dist/*.whl && abi3audit wheelhouse/*.whl --verbose
+    - name: Build wheel
+      run: make wheel
+    - name: Repair wheel
+      run: auditwheel repair --verbose --strip dist/*.whl
     - name: Upload wheels
       uses: actions/upload-artifact@v7
       with:
-        name: wheel_linux
+        name: wheel_linux_free-threaded
         path: wheelhouse/*.whl
         if-no-files-found: error
 
-  build:
-    name: Build and Test
-    needs: build-linux
+  free-threaded:
+    name: Build and Test free-threaded Wheels
+    needs: free-threaded-linux
     strategy:
       matrix:
         os: ['windows', 'macos']
@@ -56,33 +56,74 @@ jobs:
       run: tar xzf pylibcue*.tar.gz --strip-components=1
     - uses: actions/setup-python@v7
       with:
-        python-version: 3.14
+        python-version: 3.15t
     - name: Install dependencies
-      run: python -m pip install --upgrade setuptools Cython build abi3audit
+      run: python -m pip install --upgrade setuptools Cython build
     - name: Run tests
       run: make test
-    - name: Build wheel (abi3)
-      run: make wheel-abi3
-    - name: Auditwheel
-      run: abi3audit dist/*.whl --verbose
+    - name: Build wheel
+      run: make wheel
     - name: Upload wheels
       uses: actions/upload-artifact@v7
       with:
-        name: wheel_${{ matrix.os }}
+        name: wheel_${{ matrix.os }}_free-threaded
         path: dist/*.whl
+        if-no-files-found: error
+
+  abi3:
+    name: Build and Test abi3 Wheels
+    needs: free-threaded-linux
+    strategy:
+      matrix:
+        os: ['windows', 'macos', 'ubuntu']
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+    - name: Download sdist
+      uses: actions/download-artifact@v8
+      with:
+        name: sdist
+    - name: Extract sdist
+      shell: bash
+      run: tar xzf pylibcue*.tar.gz --strip-components=1
+    - uses: actions/setup-python@v7
+      with:
+        python-version: 3.14
+    - name: Install dependencies
+      run: python -m pip install --upgrade setuptools Cython build abi3audit
+    - name: Install dependencies (linux)
+      if: matrix.os == 'ubuntu'
+      run: python -m pip install --upgrade auditwheel
+    - name: Run tests
+      run: make test
+    - name: Build wheel (abi3)
+      run: |
+        make wheel-abi3
+    - name: Run abi3audit
+      run: abi3audit --verbose dist/*.whl
+    - name: Repair wheel (linux)
+      if: matrix.os == 'ubuntu'
+      run: |
+        auditwheel repair --strip dist/*.whl
+        rm dist/*.whl
+    - name: Upload wheels
+      uses: actions/upload-artifact@v7
+      with:
+        name: wheel_${{ matrix.os }}_abi3
+        path: |
+          dist/*.whl
+          wheelhouse/*.whl
         if-no-files-found: error
 
   release:
     name: Create Release
-    needs: [build-linux, build]
+    needs: [free-threaded-linux, free-threaded, abi3]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
       id-token: write
     runs-on: ubuntu-latest
     steps:
-    - name: Download sdist and wheels
-      uses: actions/download-artifact@v8
+    - uses: actions/download-artifact@v8
       with:
         path: dist/
         merge-multiple: true
