@@ -35,7 +35,7 @@ jobs:
     - name: Upload wheels
       uses: actions/upload-artifact@v7
       with:
-        name: wheel_linux_free-threaded
+        name: wheel_ubuntu_free-threaded
         path: wheelhouse/*.whl
         if-no-files-found: error
 
@@ -96,22 +96,20 @@ jobs:
     - name: Run tests
       run: make test
     - name: Build wheel (abi3)
-      run: |
-        make wheel-abi3
-    - name: Run abi3audit
-      run: abi3audit --verbose dist/*.whl
+      run: make wheel-abi3
     - name: Repair wheel (linux)
       if: matrix.os == 'ubuntu'
       run: |
         auditwheel repair --strip dist/*.whl
         rm dist/*.whl
+        mv wheelhouse/*.whl dist/
+    - name: Run abi3audit
+      run: abi3audit --verbose dist/*.whl
     - name: Upload wheels
       uses: actions/upload-artifact@v7
       with:
         name: wheel_${{ matrix.os }}_abi3
-        path: |
-          dist/*.whl
-          wheelhouse/*.whl
+        path: dist/*.whl
         if-no-files-found: error
 
   release:
