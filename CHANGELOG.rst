@@ -1,3 +1,12 @@
+v0.6.0
+------
+
+\+ `Cycloctane/libcue v2.4.3.dev1
+<https://github.com/Cycloctane/libcue/tree/v2.4.3.dev1>`_
+
+- Upgrade libcue to v2.4.3 (thread-safe parser, and some robustness improvements).
+- Mark extension as free-threading compatible.
+
 v0.5.2
 ------
 

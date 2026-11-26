@@ -5,10 +5,6 @@ pylibcue is a CUE sheet parser library for python. It provides fast and reliable
 CUE sheets parsing interfaces for python by wrapping `libcue
 <https://github.com/lipnitsk/libcue>`_ C library with Cython.
 
-*Note:* since v0.2.1, pylibcue uses libcue fork with custom patches (`Cycloctane/libcue
-<https://github.com/Cycloctane/libcue>`_) instead of original libcue to provide
-additional bugfixes and features.
-
 Install
 -------
 

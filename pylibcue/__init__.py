@@ -1,4 +1,4 @@
-__version__ = "0.5.2"
+__version__ = "0.6.0"
 
 from ._cue import Cd, CDText, Rem, Track, parse_file, parse_str
 from .mode import TrackFlag, TrackMode
