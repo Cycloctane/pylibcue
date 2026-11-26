@@ -75,12 +75,12 @@ cdef extern from "libcue.h" nogil:
     # CDTEXT functions
     Cdtext *cd_get_cdtext(const Cd *cd)
     Cdtext *track_get_cdtext(const Track *track)
-    const char *cdtext_get(Pti pti, const Cdtext *cdtext)
+    const char *cue_cdtext_get(Pti pti, const Cdtext *cdtext)
 
     # REM functions
     Rem *cd_get_rem(const Cd *cd)
     Rem *track_get_rem(const Track *track)
-    const char *rem_get(RemType cmt, Rem *rem)
+    const char *rem_get(RemType cmt, const Rem *rem)
 
     # Track functions
     Track *cd_get_track(const Cd *cd, int i)

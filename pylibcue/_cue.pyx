@@ -1,6 +1,5 @@
-# cython: language_level=3, auto_pickle=False
+# cython: language_level=3, auto_pickle=False, freethreading_compatible=True
 
-from cython cimport pymutex
 from libc.errno cimport errno
 from libc.stdio cimport fopen, fclose, FILE
 from os import fsencode, strerror
@@ -52,7 +51,7 @@ message, disc_id, genre, upc_isrc, size_info, toc_info
             self._ref = ref
 
     cdef object _getattr(self, str item):
-        cdef const char *content = libcue.cdtext_get(_PTI[item], self._cdtext)
+        cdef const char *content = libcue.cue_cdtext_get(_PTI[item], self._cdtext)
         if content is NULL:
             return None
         return content.decode(encoding=self._ref.encoding)
@@ -115,8 +114,6 @@ album_gain, album_peak, track_gain, track_peak
         """Dump all REM fields to a dictionary"""
         return {item: self._getattr(item) for item in _REM}
 
-cdef pymutex _parser_lock
-
 cdef class Cd:
     """Represents a CD described by CUE sheet.
     Its tracks are accessible via index and iteration.
@@ -164,8 +161,7 @@ cdef class Cd:
             fp = fopen(_path, "r")
             if fp is NULL:
                 raise IOError(f"Failed to read cue file {path!r} ({strerror(errno)})")
-            with _parser_lock:
-                cd = libcue.cue_parse_file(fp)
+            cd = libcue.cue_parse_file(fp)
             fclose(fp)
         if cd is NULL:
             raise ValueError(f"Failed to parse cue file {path!r}")
@@ -183,7 +179,7 @@ cdef class Cd:
         cdef bytes encoded = string.encode()
         cdef const char *content = encoded
         cdef libcue.Cd *cd
-        with nogil, _parser_lock:
+        with nogil:
             cd = libcue.cue_parse_string(content)
         if cd is NULL:
             raise ValueError("Failed to parse cue string")
