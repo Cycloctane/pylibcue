@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pylibcue"
-version = "0.5.2"
-requires-python = ">=3.10"
+dynamic = ["version"]
+requires-python = ">=3.11"
 authors = [
   {name = "Cycloctane", email = "Cycloctane@octane.top"},
 ]
@@ -22,11 +22,12 @@ classifiers = [
   "Topic :: Multimedia :: Sound/Audio :: CD Audio :: CD Ripping",
   "Topic :: Software Development :: Libraries",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Programming Language :: Cython",
   "Programming Language :: C",
   "Operating System :: Microsoft :: Windows",
@@ -44,3 +45,6 @@ Changelog = "https://github.com/Cycloctane/pylibcue/blob/main/CHANGELOG.rst"
 
 [tool.setuptools]
 packages = ["pylibcue"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pylibcue.__version__"}

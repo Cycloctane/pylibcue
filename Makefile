@@ -1,18 +1,17 @@
-CC = gcc
 LEX = flex
 YACC = bison
-PYTHON = python3
-LIBCUE = vendor/libcue
+PYTHON ?= python3
+LIBCUE ?= vendor/libcue
 
-.PHONY: parser ext test sdist wheel clean all
+.PHONY: parser ext test sdist wheel wheel-abi3 clean all
 
 default: all
 
-$(LIBCUE)/cue_scanner.c:
-	$(LEX) --nounistd -o $@ $(LIBCUE)/cue_scanner.l
+$(LIBCUE)/cue_scanner.c: $(LIBCUE)/cue_scanner.l
+	$(LEX) -o $@ $^
 
-$(LIBCUE)/cue_parser.c $(LIBCUE)/cue_parser.h:
-	$(YACC) -l -d -o $(firstword $@) $(LIBCUE)/cue_parser.y
+$(LIBCUE)/cue_parser.c $(LIBCUE)/cue_parser.h: $(LIBCUE)/cue_parser.y
+	$(YACC) -l -d -o $(firstword $@) $^
 
 parser: $(LIBCUE)/cue_scanner.c $(LIBCUE)/cue_parser.c $(LIBCUE)/cue_parser.h
 
@@ -25,7 +24,9 @@ test: ext
 sdist: parser
 	$(PYTHON) -m build --sdist
 
-wheel: parser
+wheel-abi3: export PYLIBCUE_LIMITED_API = 1
+
+wheel wheel-abi3: parser
 	LIBCUE_PATH=$(LIBCUE) CC=$(CC) $(PYTHON) -m build --wheel
 
 all: sdist wheel
