@@ -8,7 +8,7 @@ on:
 
 jobs:
   free-threaded-linux:
-    name: Build and Test free-threaded Wheels (linux)
+    name: Build and Test (free-threaded, linux)
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
@@ -31,7 +31,7 @@ jobs:
     - name: Build wheel
       run: make wheel
     - name: Repair wheel
-      run: auditwheel repair --verbose --strip dist/*.whl
+      run: auditwheel repair --strip dist/*.whl
     - name: Upload wheels
       uses: actions/upload-artifact@v7
       with:
@@ -40,7 +40,7 @@ jobs:
         if-no-files-found: error
 
   free-threaded:
-    name: Build and Test free-threaded Wheels
+    name: Build and Test (free-threaded)
     needs: free-threaded-linux
     strategy:
       matrix:
@@ -71,7 +71,7 @@ jobs:
         if-no-files-found: error
 
   abi3:
-    name: Build and Test abi3 Wheels
+    name: Build and Test (abi3)
     needs: free-threaded-linux
     strategy:
       matrix:
