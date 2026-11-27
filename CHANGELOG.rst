@@ -1,11 +1,15 @@
+v0.6.1
+------
+
+- Upgrade libcue to v2.4.4.
+- Build wheels for Python3.15t.
+
 v0.6.0
 ------
 
-\+ `Cycloctane/libcue v2.4.3.dev1
-<https://github.com/Cycloctane/libcue/tree/v2.4.3.dev1>`_
-
 - Upgrade libcue to v2.4.3 (thread-safe parser, and some robustness improvements).
 - Mark extension as free-threading compatible.
+- Drop support for Python3.10.
 
 v0.5.2
 ------
